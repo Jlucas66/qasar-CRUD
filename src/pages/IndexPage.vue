@@ -14,6 +14,7 @@
     </template>
     <template v-slot:body-cell-actions="props">
       <q-td :props="props">
+        <q-btn icon="edit" color="info" dense size="sm" @click="handleEditPost(props.row.id)"/>
         <q-btn icon="delete" color="negative" dense size="sm" @click="handleDeletePost(props.row.id)"/>
       </q-td>
     </template>
@@ -25,6 +26,7 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import postService from 'src/services/posts'
 import { useQuasar } from 'quasar'
+import { useRouter } from 'vue-router'
 const url = import.meta.env.VITE_API_URL
 
 export default defineComponent({
@@ -40,6 +42,7 @@ export default defineComponent({
       { name:'actions', field: 'actions', label: 'Ações', align: 'right' }
     ])
     const $q = useQuasar()
+    const router = useRouter()
 
     onMounted(() => {
       getPosts()
@@ -72,10 +75,15 @@ export default defineComponent({
       }
     }
 
+    const handleEditPost = (id) => {
+      router.push({ name: 'formPost', params: { id } })
+    }
+
     return {
       columns,
       posts,
-      handleDeletePost
+      handleDeletePost,
+      handleEditPost
     }
   }
 })

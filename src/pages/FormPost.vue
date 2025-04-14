@@ -2,7 +2,6 @@
     <q-page padding>
     <q-form
       @submit="onSubmit"
-      @reset="onReset"
       class="row q-col-gutter-sm"
     >
       <q-input
@@ -49,26 +48,49 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import postService from 'src/services/posts'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 const url = import.meta.env.VITE_API_URL
 
 export default defineComponent({
   name: 'FormPost',
   setup () {
-    const { post } = postService()
+    const { post, getById, update } = postService()
     const $q = useQuasar()
     const router = useRouter()
+    const route = useRoute()
     const form = ref({
         title: '',
         content: '',
         author: ''
     })
 
+    onMounted( async () => {
+      if (route.params.id) {
+        getPost(route.params.id)
+      }
+      
+    })
+
+
+    const getPost = async (id) => {
+      try {
+        const response = await getById(id)
+        form.value = response
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
     const onSubmit = async () => {
       try {
+        if (form.value.id) {
+          await update(form.value)
+        } else {
+          await post(form.value)
+        }
         console.log(`${url}/posts` ,form.value) 
         await post(form.value)
         $q.notify({message: 'Adicionado com sucesso', icon: 'check', color: 'green'})
@@ -81,6 +103,8 @@ export default defineComponent({
     return {
         form,
         onSubmit,
+        onMounted,
+        getPost
     }
   }
 })
